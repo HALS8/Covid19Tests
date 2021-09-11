@@ -9,7 +9,9 @@ namespace Covid19.Tests
 {
     public class TestNewsFeedService : INewsFeedService
     {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<NewsArticle[]> GetNewsFeedAsync(string feed)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             var newsItems = new List<NewsArticle>();
 
