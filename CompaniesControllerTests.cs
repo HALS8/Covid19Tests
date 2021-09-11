@@ -562,7 +562,7 @@ namespace Covid19.Tests
         }
 
         [Fact]
-        public async Task GetSimilarCompanies_WithUnconfirmedEmail_ReturnsBadRequest()
+        public async Task GetSimilarCompanies_WithUnconfirmedEmail_ReturnsInternalServerError()
         {
             // Arrange
             await AuthenticateAsync(false);
@@ -572,7 +572,7 @@ namespace Covid19.Tests
             var response = await TestClient.PostAsJsonAsync("api/companies/similar", company);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         }
 
         [Fact]
@@ -971,7 +971,7 @@ namespace Covid19.Tests
         }
 
         [Fact]
-        public async Task PostCompany_WithUnconfirmedEmail_ReturnsBadRequest()
+        public async Task PostCompany_WithUnconfirmedEmail_ReturnsInternalServerError()
         {
             // Arrange
             await AuthenticateAsync(false);
@@ -989,7 +989,7 @@ namespace Covid19.Tests
             var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         }
 
         [Fact]
@@ -1631,7 +1631,7 @@ namespace Covid19.Tests
         }
 
         [Fact]
-        public async Task PostBranch_WithUnconfirmedEmail_ReturnsBadRequest()
+        public async Task PostBranch_WithUnconfirmedEmail_ReturnsInternalServerError()
         {
             // Arrange
             await AuthenticateAsync(false);
@@ -1659,7 +1659,7 @@ namespace Covid19.Tests
             var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         }
 
         [Fact]

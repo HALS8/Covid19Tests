@@ -228,7 +228,7 @@ namespace Covid19.Tests
         }
 
         [Fact]
-        public async Task PostReview_WithUnconfirmedEmail_ReturnsBadRequest()
+        public async Task PostReview_WithUnconfirmedEmail_ReturnsInternalServerError()
         {
             // Arrange
             await AuthenticateAsync(false);
@@ -249,7 +249,7 @@ namespace Covid19.Tests
             var response = await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         }
 
         [Fact]
