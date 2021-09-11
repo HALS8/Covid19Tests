@@ -439,20 +439,20 @@ namespace Covid19.Tests
         public async Task GetCompany_WithInvalidID_ReturnsNotFound()
         {
             // Act
-            var company = await TestClient.GetAsync($"api/companies?id={ShortGuid.NewGuid()}");
+            var response = await TestClient.GetAsync($"api/companies?id={ShortGuid.NewGuid()}");
 
             // Assert
-            company.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
         public async Task GetCompany_WithoutID_WithoutRatings_ReturnsBadRequest()
         {
             // Act
-            var company = await TestClient.GetAsync($"api/companies");
+            var response = await TestClient.GetAsync($"api/companies");
 
             // Assert
-            company.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -555,10 +555,10 @@ namespace Covid19.Tests
             var company = (await TestClient.GetFromJsonAsync<List<CompanyLightDTO>>("api/companies/search?SearchString='Test Company 1'"))[0];
 
             // Act
-            var companies = await TestClient.PostAsJsonAsync("api/companies/similar", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies/similar", company);
 
             // Assert
-            companies.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
@@ -569,10 +569,10 @@ namespace Covid19.Tests
             var company = (await TestClient.GetFromJsonAsync<List<CompanyLightDTO>>("api/companies/search?SearchString='Test Company 1'"))[0];
 
             // Act
-            var companies = await TestClient.PostAsJsonAsync("api/companies/similar", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies/similar", company);
 
             // Assert
-            companies.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -593,11 +593,11 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companiesResponse = await TestClient.PostAsJsonAsync($"api/companies/similar", newLocalCompany);
-            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await companiesResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync($"api/companies/similar", newLocalCompany);
+            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            companiesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             companies.Count.Should().Be(1);
             companies[0].Name.Should().Be("Test Company 6");
         }
@@ -618,11 +618,11 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companiesResponse = await TestClient.PostAsJsonAsync($"api/companies/similar", newCompany);
-            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await companiesResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync($"api/companies/similar", newCompany);
+            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            companiesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             companies.Count.Should().Be(3);
             companies[0].Name.Should().Be("Test Company 0");
             companies[1].Name.Should().Be("Test Company 1");
@@ -645,11 +645,11 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companiesResponse = await TestClient.PostAsJsonAsync($"api/companies/similar", newCompany);
-            companiesResponse.Headers.TryGetValues("Total-Count", out var count);
+            var response = await TestClient.PostAsJsonAsync($"api/companies/similar", newCompany);
+            response.Headers.TryGetValues("Total-Count", out var count);
 
             // Assert
-            companiesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             count.Should().BeEquivalentTo("0");
         }
 
@@ -669,11 +669,11 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companiesResponse = await TestClient.PostAsJsonAsync($"api/companies/similar?PageSize=7", newCompany);
-            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await companiesResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync($"api/companies/similar?PageSize=7", newCompany);
+            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            companiesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             companies.Count.Should().Be(7);
             companies[0].Name.Should().Be("Test Company 0");
             companies[1].Name.Should().Be("Test Company 1");
@@ -700,11 +700,11 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companiesResponse = await TestClient.PostAsJsonAsync($"api/companies/similar?PageSize=15", newCompany);
-            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await companiesResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync($"api/companies/similar?PageSize=15", newCompany);
+            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            companiesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             companies.Count.Should().Be(11);
             companies[0].Name.Should().Be("Test Company 0");
             companies[1].Name.Should().Be("Test Company 1");
@@ -735,11 +735,11 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companiesResponse = await TestClient.PostAsJsonAsync($"api/companies/similar?PageNumber=3", newCompany);
-            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await companiesResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync($"api/companies/similar?PageNumber=3", newCompany);
+            var companies = JsonConvert.DeserializeObject<List<CompanyLightDTO>>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            companiesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             companies.Count.Should().Be(3);            
             companies[0].Name.Should().Be("Test Company 5");
             companies[1].Name.Should().Be("Test Company 6");
@@ -751,7 +751,7 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = new CompanyLightDTO()
+            var expected = new CompanyLightDTO()
             {
                 Name = "New Test Company",
                 Structure = "Multinational",
@@ -762,13 +762,13 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
-            var companyResponseContent = JsonConvert.DeserializeObject<CompanyLightDTO>(await companyResponse.Content.ReadAsStringAsync());
-            company.Guid = companyResponseContent.Guid;
+            var response = await TestClient.PostAsJsonAsync("api/companies", expected);
+            var actual = JsonConvert.DeserializeObject<CompanyLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyResponseContent.Should().BeEquivalentTo(company);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -776,7 +776,7 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = new CompanyLightDTO()
+            var expected = new CompanyLightDTO()
             {
                 Name = "New Test Company",
                 Structure = "National",
@@ -787,13 +787,13 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
-            var companyResponseContent = JsonConvert.DeserializeObject<CompanyLightDTO>(await companyResponse.Content.ReadAsStringAsync());
-            company.Guid = companyResponseContent.Guid;
+            var response = await TestClient.PostAsJsonAsync("api/companies", expected);
+            var actual = JsonConvert.DeserializeObject<CompanyLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyResponseContent.Should().BeEquivalentTo(company);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -801,7 +801,7 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = new CompanyLightDTO()
+            var expected = new CompanyLightDTO()
             {
                 Name = "New Test Company",
                 Structure = "Regional",
@@ -813,13 +813,13 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
-            var companyResponseContent = JsonConvert.DeserializeObject<CompanyLightDTO>(await companyResponse.Content.ReadAsStringAsync());
-            company.Guid = companyResponseContent.Guid;
+            var response = await TestClient.PostAsJsonAsync("api/companies", expected);
+            var actual = JsonConvert.DeserializeObject<CompanyLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyResponseContent.Should().BeEquivalentTo(company);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -827,7 +827,7 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = new CompanyLightDTO()
+            var expected = new CompanyLightDTO()
             {
                 Name = "New Test Company",
                 Structure = "Local",
@@ -842,13 +842,13 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
-            var companyResponseContent = JsonConvert.DeserializeObject<CompanyLightDTO>(await companyResponse.Content.ReadAsStringAsync());
-            company.Guid = companyResponseContent.Guid;
+            var response = await TestClient.PostAsJsonAsync("api/companies", expected);
+            var actual = JsonConvert.DeserializeObject<CompanyLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyResponseContent.Should().BeEquivalentTo(company);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -856,7 +856,7 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = new CompanyLightDTO()
+            var expected = new CompanyLightDTO()
             {
                 Name = "New Test Company",
                 Structure = "Multinational",
@@ -871,17 +871,17 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
-            var companyResponseContent = JsonConvert.DeserializeObject<CompanyLightDTO>(await companyResponse.Content.ReadAsStringAsync());
-            company.Guid = companyResponseContent.Guid;
-            company.Region = null;
-            company.City = null;
-            company.StreetName = null;
-            company.StreetNumber = null;
+            var response = await TestClient.PostAsJsonAsync("api/companies", expected);
+            var actual = JsonConvert.DeserializeObject<CompanyLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
+            expected.Region = null;
+            expected.City = null;
+            expected.StreetName = null;
+            expected.StreetNumber = null;
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyResponseContent.Should().BeEquivalentTo(company);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -889,7 +889,7 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = new CompanyLightDTO()
+            var expected = new CompanyLightDTO()
             {
                 Name = "New Test Company",
                 Structure = "National",
@@ -904,17 +904,17 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
-            var companyResponseContent = JsonConvert.DeserializeObject<CompanyLightDTO>(await companyResponse.Content.ReadAsStringAsync());
-            company.Guid = companyResponseContent.Guid;
-            company.Region = null;
-            company.City = null;
-            company.StreetName = null;
-            company.StreetNumber = null;
+            var response = await TestClient.PostAsJsonAsync("api/companies", expected);
+            var actual = JsonConvert.DeserializeObject<CompanyLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
+            expected.Region = null;
+            expected.City = null;
+            expected.StreetName = null;
+            expected.StreetNumber = null;
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyResponseContent.Should().BeEquivalentTo(company);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -922,7 +922,7 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = new CompanyLightDTO()
+            var expected = new CompanyLightDTO()
             {
                 Name = "New Test Company",
                 Structure = "Regional",
@@ -937,16 +937,16 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
-            var companyResponseContent = JsonConvert.DeserializeObject<CompanyLightDTO>(await companyResponse.Content.ReadAsStringAsync());
-            company.Guid = companyResponseContent.Guid;
-            company.City = null;
-            company.StreetName = null;
-            company.StreetNumber = null;
+            var response = await TestClient.PostAsJsonAsync("api/companies", expected);
+            var actual = JsonConvert.DeserializeObject<CompanyLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
+            expected.City = null;
+            expected.StreetName = null;
+            expected.StreetNumber = null;
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyResponseContent.Should().BeEquivalentTo(company);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -964,10 +964,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
@@ -986,10 +986,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1009,10 +1009,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1031,10 +1031,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1053,10 +1053,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1076,10 +1076,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1098,10 +1098,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1124,10 +1124,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1149,10 +1149,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1174,10 +1174,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1199,10 +1199,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1227,10 +1227,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1256,10 +1256,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1287,10 +1287,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var companyResponse = await TestClient.PostAsJsonAsync("api/companies", company);
+            var response = await TestClient.PostAsJsonAsync("api/companies", company);
 
             // Assert
-            companyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }        
 
         [Fact]
@@ -1437,12 +1437,13 @@ namespace Covid19.Tests
                 Branch = branch,
                 ReviewMessage = "This is a test."
             };
-            await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Act
+            var postReviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
             var response = await TestClient.GetFromJsonAsync<bool>($"api/companies/branches/{branch.Guid}/previously-reviewed");
 
             // Assert
+            postReviewResponse.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Should().BeTrue();
         }
 
@@ -1493,7 +1494,11 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = (await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString=Test Company 1"))[0];
+
+            var companyResponse = await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString=Test Company 1");
+            companyResponse.Count.Should().BeGreaterThan(0);
+            var company = companyResponse[0];
+
             var newBranch = new BranchFullDTO()
             {
                 Name = "Test Company 1 Local",
@@ -1512,9 +1517,20 @@ namespace Covid19.Tests
                 Latitude = "6576754.98",
                 Longitude = "867546546.23"
             };
-            var newBranchLight = new BranchNoRatingsDTO()
+
+            var expected = new BranchNoRatingsDTO()
             {
-                Company = new CompanyLightDTO() { Guid = company.Guid, Country = "XX" },
+                Company = new CompanyLightDTO() 
+                { 
+                    Guid = company.Guid,
+                    Name = company.Name,
+                    PrimarySector = company.PrimarySector,
+                    SecondarySector = company.SecondarySector,
+                    Structure = company.Structure,
+                    HasBranches = company.HasBranches,
+                    CompanyDescriptor = company.CompanyDescriptor,
+                    Country = "XX",
+                },
                 Name = newBranch.Name,
                 StreetNumber = newBranch.StreetNumber,
                 StreetName = newBranch.StreetName,
@@ -1527,13 +1543,13 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
-            var branchResponseContent = JsonConvert.DeserializeObject<BranchNoRatingsDTO>(await branchResponse.Content.ReadAsStringAsync());
-            newBranchLight.Guid = branchResponseContent.Guid;
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var actual = JsonConvert.DeserializeObject<BranchNoRatingsDTO>(await response.Content.ReadAsStringAsync());
+            expected.Guid = actual.Guid;
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            branchResponseContent.Should().BeEquivalentTo(newBranchLight);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -1541,11 +1557,17 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-            var company = (await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString=Test Company 0"))[0];
-            var branch = (await TestClient.GetFromJsonAsync<List<BranchFullDTO>>($"api/companies/{company.Guid}/branches"))[0];
-            var branchLight = new BranchNoRatingsDTO()
+            var companyResponse = await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString=Test Company 0");
+            companyResponse.Count.Should().BeGreaterThan(0);
+            var company = companyResponse[0];
+
+            var existingBranchResponse = await TestClient.GetFromJsonAsync<List<BranchFullDTO>>($"api/companies/{company.Guid}/branches");
+            existingBranchResponse.Count.Should().BeGreaterThan(0);
+            var existingBranch = existingBranchResponse[0];
+
+            var expected = new BranchNoRatingsDTO()
             {
-                Guid = branch.Guid,
+                Guid = existingBranch.Guid,
                 Company = new CompanyLightDTO() 
                 { 
                     Guid = company.Guid, 
@@ -1557,24 +1579,24 @@ namespace Covid19.Tests
                     CompanyDescriptor = company.CompanyDescriptor,
                     Country = "XX" 
                 },
-                Name = branch.Name,
-                StreetNumber = branch.StreetNumber,
-                StreetName = branch.StreetName,
-                City = branch.City,
-                Region = branch.Region,
+                Name = existingBranch.Name,
+                StreetNumber = existingBranch.StreetNumber,
+                StreetName = existingBranch.StreetName,
+                City = existingBranch.City,
+                Region = existingBranch.Region,
                 Country = "GB",
-                PostCode = branch.PostCode,
-                Longitude = branch.Longitude,
-                Latitude = branch.Latitude
+                PostCode = existingBranch.PostCode,
+                Longitude = existingBranch.Longitude,
+                Latitude = existingBranch.Latitude
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", branch);
-            var branchResponseContent = JsonConvert.DeserializeObject<BranchNoRatingsDTO>(await branchResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", existingBranch);
+            var actual = JsonConvert.DeserializeObject<BranchNoRatingsDTO>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            branchResponseContent.Should().BeEquivalentTo(branchLight);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -1602,10 +1624,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
@@ -1634,10 +1656,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1665,10 +1687,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
@@ -1697,10 +1719,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1729,10 +1751,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1761,10 +1783,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1793,10 +1815,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -1825,10 +1847,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var branchResponse = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
+            var response = await TestClient.PostAsJsonAsync("api/companies/branches", newBranch);
 
             // Assert
-            branchResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
         }
     }
 }
