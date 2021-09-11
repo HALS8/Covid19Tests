@@ -18,35 +18,12 @@ namespace Covid19.Tests
         {
             // Arrange
             await AuthenticateAsync(true);
-
-            var company1 = new CompanyFullDTO()
-            {
-                Name = "NewTestCompany1",
-                Structure = "multinational",
-                HasBranches = false,
-                PrimarySector = "Cinema",
-                CompanyDescriptor = "Company",
-                Country = "xx",
-            };
-            var company2 = new CompanyFullDTO()
-            {
-                Name = "NewTestCompany2",
-                Structure = "multinational",
-                HasBranches = false,
-                PrimarySector = "Accountancy",
-                CompanyDescriptor = "Company",
-                Country = "xx",
-            };
-
-            var companyResponse1 = await TestClient.PostAsJsonAsync("api/companies", company1);
-            var companyResponse2 = await TestClient.PostAsJsonAsync("api/companies", company2);
-
-            var companyResponseContent1 = JsonConvert.DeserializeObject<CompanyFullDTO>(await companyResponse1.Content.ReadAsStringAsync());
-            var companyResponseContent2 = JsonConvert.DeserializeObject<CompanyFullDTO>(await companyResponse2.Content.ReadAsStringAsync());
+            var company1 = (await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString='Test Company 0'"))[0];
+            var company2 = (await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString='Test Company 1'"))[0];           
 
             var review1 = new ReviewFullDTO()
             {
-                Company = companyResponseContent1,
+                Company = company1,
                 ConsumerRating = 2,
                 EmployeeRating = 3.5,
                 SocietyRating = 2.5,
@@ -55,7 +32,7 @@ namespace Covid19.Tests
             };
             var review2 = new ReviewFullDTO()
             {
-                Company = companyResponseContent2,
+                Company = company2,
                 ConsumerRating = 4,
                 EmployeeRating = 5,
                 ReviewMessage = "This is a test",
@@ -71,11 +48,12 @@ namespace Covid19.Tests
 
             // Act
             var response = await TestClient.GetAsync("api/reviews/user");
-            var responseContent = JsonConvert.DeserializeObject<IEnumerable<ReviewLightDTO>>(await response.Content.ReadAsStringAsync());
+            var actual = JsonConvert.DeserializeObject<IEnumerable<ReviewLightDTO>>(await response.Content.ReadAsStringAsync());
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            responseContent.Should().BeEquivalentTo(reviews);
+            Assert.Equal(2, reviews.Count());
+            actual.Should().BeEquivalentTo(reviews);
         }
 
         [Fact]
@@ -83,11 +61,11 @@ namespace Covid19.Tests
         {
             // Act
             var response = await TestClient.GetAsync("api/reviews/user");
-            var responseContent = JsonConvert.DeserializeObject<LoginResponse>(await response.Content.ReadAsStringAsync());
+            var actual = JsonConvert.DeserializeObject<LoginResponse>(await response.Content.ReadAsStringAsync());
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);            
-            responseContent.Should().BeNull();
+            actual.Should().BeNull();
         }
 
         [Fact]
@@ -98,11 +76,11 @@ namespace Covid19.Tests
 
             // Act
             var response = await TestClient.GetAsync("api/reviews/" + latestReview.Guid);
-            var responseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
+            var actual = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            responseContent.Should().BeEquivalentTo(latestReview);
+            actual.Should().BeEquivalentTo(latestReview);
         }
 
         [Fact]
@@ -110,11 +88,11 @@ namespace Covid19.Tests
         {
             // Act
             var response = await TestClient.GetAsync("api/reviews/");
-            var responseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
+            var actual = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
-            responseContent.Should().BeNull();
+            actual.Should().BeNull();
         }
 
         [Fact]
@@ -122,11 +100,11 @@ namespace Covid19.Tests
         {
             // Act
             var response = await TestClient.GetAsync("api/reviews/" + ShortGuid.NewGuid());
-            var responseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
+            var actual = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            responseContent.Should().BeEquivalentTo(new ReviewLightDTO());
+            actual.Should().BeEquivalentTo(new ReviewLightDTO());
         }
 
         [Fact]
@@ -142,15 +120,15 @@ namespace Covid19.Tests
                 EmployeeRating = 5
             };
             var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
-            var reviewResponseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
+            var expected = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
 
             // Act
-            var latestReview = await TestClient.GetAsync("api/Reviews/Latest");
-            var latestReviewContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.GetAsync("api/Reviews/Latest");
+            var actual = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
 
             // Assert
-            latestReview.StatusCode.Should().Be(HttpStatusCode.OK);
-            latestReviewContent.Should().BeEquivalentTo(reviewResponseContent);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -170,7 +148,7 @@ namespace Covid19.Tests
                 Source2 = "https://www.coronaverdict.com",
                 Employee = true
             };
-            var reviewLight = new ReviewLightDTO()
+            var expected = new ReviewLightDTO()
             {                
                 ConsumerRating = review.ConsumerRating,
                 EmployeeRating = review.EmployeeRating,
@@ -185,16 +163,16 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
-            var reviewResponseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
-            reviewLight.Date = reviewResponseContent.Date;
-            reviewLight.Guid = reviewResponseContent.Guid;
-            reviewLight.ReviewedBy = reviewResponseContent.ReviewedBy;
-            reviewLight.EssentialWorker = reviewResponseContent.EssentialWorker;
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var actual = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
+            expected.Date = actual.Date;
+            expected.Guid = actual.Guid;
+            expected.ReviewedBy = actual.ReviewedBy;
+            expected.EssentialWorker = actual.EssentialWorker;
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            reviewResponseContent.Should().BeEquivalentTo(reviewLight);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }        
 
         [Fact]
@@ -215,12 +193,12 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
-            var reviewResponseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var actual = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            reviewResponseContent.Should().BeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            actual.Should().BeNull();
         }
 
         [Fact]
@@ -241,12 +219,12 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
-            var reviewResponseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var actual = JsonConvert.DeserializeObject<ReviewLightDTO>(await response.Content.ReadAsStringAsync());
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            reviewResponseContent.Should().BeEquivalentTo(new ReviewLightDTO());
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            actual.Should().BeEquivalentTo(new ReviewLightDTO());
         }
 
         [Fact]
@@ -268,10 +246,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -301,10 +279,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
@@ -327,10 +305,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -342,25 +320,25 @@ namespace Covid19.Tests
 
             // Act
             await PostReview_ForCompany_WhilstAuthenticated_CreatesReview();
-            var company = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
 
             // Assert
-            company.CustomerRating.Should().Be(4);
-            company.EmployeeRating.Should().Be(5);
-            company.SocietyRating.Should().Be(2.5);
-            company.OverallRating.Should().BeApproximately(3.83, .001);
-            company.EmployeeCustomerRating.Should().Be(4);
-            company.EmployeeEmployeeRating.Should().Be(5);
-            company.EmployeeSocietyRating.Should().Be(2.5);
-            company.EmployeeOverallRating.Should().BeApproximately(3.83, .001);
-            company.EssentialCustomerRating.Should().BeNull();
-            company.EssentialEmployeeRating.Should().BeNull();
-            company.EssentialSocietyRating.Should().BeNull();
-            company.EssentialOverallRating.Should().BeNull();
-            company.VulnerableCustomerRating.Should().BeNull();
-            company.VulnerableEmployeeRating.Should().BeNull();
-            company.VulnerableSocietyRating.Should().BeNull();
-            company.VulnerableOverallRating.Should().BeNull();
+            actual.CustomerRating.Should().Be(4);
+            actual.EmployeeRating.Should().Be(5);
+            actual.SocietyRating.Should().Be(2.5);
+            actual.OverallRating.Should().BeApproximately(3.83, .001);
+            actual.EmployeeCustomerRating.Should().Be(4);
+            actual.EmployeeEmployeeRating.Should().Be(5);
+            actual.EmployeeSocietyRating.Should().Be(2.5);
+            actual.EmployeeOverallRating.Should().BeApproximately(3.83, .001);
+            actual.EssentialCustomerRating.Should().BeNull();
+            actual.EssentialEmployeeRating.Should().BeNull();
+            actual.EssentialSocietyRating.Should().BeNull();
+            actual.EssentialOverallRating.Should().BeNull();
+            actual.VulnerableCustomerRating.Should().BeNull();
+            actual.VulnerableEmployeeRating.Should().BeNull();
+            actual.VulnerableSocietyRating.Should().BeNull();
+            actual.VulnerableOverallRating.Should().BeNull();
         }
 
         [Fact]
@@ -372,10 +350,10 @@ namespace Covid19.Tests
 
             // Act
             await PostReview_ForCompany_WhilstAuthenticated_CreatesReview();
-            var company = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
 
             // Assert
-            company.ReviewCount.Should().Be(1);
+            actual.ReviewCount.Should().Be(1);
         }
 
         [Fact]
@@ -393,10 +371,10 @@ namespace Covid19.Tests
             await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Act
-            var companyFull = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
 
             // Assert
-            companyFull.ReviewCount.Should().Be(1);
+            actual.ReviewCount.Should().Be(1);
         }
 
         [Fact]
@@ -421,10 +399,10 @@ namespace Covid19.Tests
             var reviewResponseContent = JsonConvert.DeserializeObject<ReviewLightDTO>(await reviewResponse.Content.ReadAsStringAsync());
 
             // Act            
-            var companyReview = await TestClient.GetFromJsonAsync<ReviewLightDTO>($"api/reviews/{reviewResponseContent.Guid}");
+            var actual = await TestClient.GetFromJsonAsync<ReviewLightDTO>($"api/reviews/{reviewResponseContent.Guid}");
 
             // Assert
-            companyReview.Employee.Should().BeTrue();
+            actual.Employee.Should().BeTrue();
         }
 
         [Fact]
@@ -447,7 +425,7 @@ namespace Covid19.Tests
                 Source2 = "https://www.coronaverdict.com",
                 Employee = true
             };
-            var reviewLight = new ReviewLightDTO()
+            var expected = new ReviewLightDTO()
             {
                 Branch = new BranchNoRatingsDTO() 
                 {
@@ -473,16 +451,20 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
-            var companyReviewsResponse = (await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/Companies/{company.Guid}/reviews"))[0];
-            reviewLight.Date = companyReviewsResponse.Date;
-            reviewLight.Guid = companyReviewsResponse.Guid;
-            reviewLight.ReviewedBy = companyReviewsResponse.ReviewedBy;
-            reviewLight.EssentialWorker = companyReviewsResponse.EssentialWorker;
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+            var companyReviews = await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/Companies/{company.Guid}/reviews");
+            companyReviews.Count.Should().BeGreaterThan(0);
+            var actual = companyReviews[0];
+
+            expected.Date = actual.Date;
+            expected.Guid = actual.Guid;
+            expected.ReviewedBy = actual.ReviewedBy;
+            expected.EssentialWorker = actual.EssentialWorker;
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyReviewsResponse.Should().BeEquivalentTo(reviewLight);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -494,10 +476,10 @@ namespace Covid19.Tests
 
             // Act
             await PostReview_ForCompany_WhilstAuthenticated_CreatesReview();
-            var companyReviews = await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/companies/{company.Guid}/reviews");
+            var actual = await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/companies/{company.Guid}/reviews");
 
             // Assert
-            companyReviews.Count.Should().Be(2);
+            actual.Count.Should().Be(2);
         }
 
         [Fact]
@@ -517,10 +499,10 @@ namespace Covid19.Tests
 
             // Act
             await TestClient.PostAsJsonAsync("api/reviews", review);
-            var companyReviews = await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/companies/{company.Guid}/reviews");
+            var actual = await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/companies/{company.Guid}/reviews");
 
             // Assert
-            companyReviews.Count.Should().Be(2);
+            actual.Count.Should().Be(2);
         }
 
         [Fact]
@@ -559,7 +541,7 @@ namespace Covid19.Tests
                 ConsumerRating = 1,
                 SocietyRating = 3
             };
-            var reviewLight = new ReviewLightDTO()
+            var expected = new ReviewLightDTO()
             {
                 Branch = new BranchNoRatingsDTO()
                 {
@@ -585,16 +567,16 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", newReview);
-            var companyReviewsResponse = (await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/Companies/{company.Guid}/reviews")).Where(r => r.Branch.Guid == newBranch.Guid).FirstOrDefault();
-            reviewLight.Date = companyReviewsResponse.Date;
-            reviewLight.Guid = companyReviewsResponse.Guid;
-            reviewLight.ReviewedBy = companyReviewsResponse.ReviewedBy;
-            reviewLight.EssentialWorker = companyReviewsResponse.EssentialWorker;
+            var response = await TestClient.PostAsJsonAsync("api/reviews", newReview);
+            var actual = (await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/Companies/{company.Guid}/reviews")).Where(r => r.Branch.Guid == newBranch.Guid).FirstOrDefault();
+            expected.Date = actual.Date;
+            expected.Guid = actual.Guid;
+            expected.ReviewedBy = actual.ReviewedBy;
+            expected.EssentialWorker = actual.EssentialWorker;
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            companyReviewsResponse.Should().BeEquivalentTo(reviewLight);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -637,10 +619,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
@@ -649,8 +631,14 @@ namespace Covid19.Tests
             // Arrange
             await PostReview_ForBranch_WhilstAuthenticated_CreatesReview();
             await AuthenticateAsync(true);
-            var company = (await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString='Test Company 0'"))[0];
-            var branch = (await TestClient.GetFromJsonAsync<List<BranchFullDTO>>($"api/companies/{company.Guid}/branches"))[0];
+
+            var companyResponse = await TestClient.GetFromJsonAsync<List<CompanyFullDTO>>("api/companies/search?SearchString='Test Company 0'");
+            companyResponse.Count.Should().BeGreaterThan(0);
+            var company = companyResponse[0];
+
+            var branchResponse = await TestClient.GetFromJsonAsync<List<BranchFullDTO>>($"api/companies/{company.Guid}/branches");
+            branchResponse.Count.Should().BeGreaterThan(0);
+            var branch = branchResponse[0];
 
             var review = new ReviewFullDTO()
             {
@@ -664,10 +652,10 @@ namespace Covid19.Tests
             };
 
             // Act
-            var reviewResponse = await TestClient.PostAsJsonAsync("api/reviews", review);
+            var response = await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Assert
-            reviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }        
 
         [Fact]
@@ -702,11 +690,12 @@ namespace Covid19.Tests
             // Act
             await TestClient.PostAsJsonAsync("api/reviews", companyReview);
             await TestClient.PostAsJsonAsync("api/reviews", branchReview);
-            var updatedCompanyReviewResponse = await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/companies/{company.Guid}/reviews");
-            var updatedCompanyReview = updatedCompanyReviewResponse.Where(r => r.Branch == null).FirstOrDefault();
+            var response = await TestClient.GetFromJsonAsync<List<ReviewLightDTO>>($"api/companies/{company.Guid}/reviews");
+            var actual = response.Where(r => r.Branch == null).FirstOrDefault();
 
             // Assert
-            updatedCompanyReview.Employee.Should().BeTrue();
+            response.Count.Should().Be(2);
+            actual.Employee.Should().BeTrue();
         }     
 
         [Fact]
@@ -718,25 +707,25 @@ namespace Covid19.Tests
 
             // Act
             await PostReview_ForBranch_WhilstAuthenticated_CreatesReview();
-            var company = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
 
             // Assert
-            company.CustomerRating.Should().Be(4);
-            company.EmployeeRating.Should().Be(5);
-            company.SocietyRating.Should().Be(2.5);
-            company.OverallRating.Should().BeApproximately(3.83, .001);
-            company.EmployeeCustomerRating.Should().Be(4);
-            company.EmployeeEmployeeRating.Should().Be(5);
-            company.EmployeeSocietyRating.Should().Be(2.5);
-            company.EmployeeOverallRating.Should().BeApproximately(3.83, .001);
-            company.EssentialCustomerRating.Should().BeNull();
-            company.EssentialEmployeeRating.Should().BeNull();
-            company.EssentialSocietyRating.Should().BeNull();
-            company.EssentialOverallRating.Should().BeNull();
-            company.VulnerableCustomerRating.Should().BeNull();
-            company.VulnerableEmployeeRating.Should().BeNull();
-            company.VulnerableSocietyRating.Should().BeNull();
-            company.VulnerableOverallRating.Should().BeNull();
+            actual.CustomerRating.Should().Be(4);
+            actual.EmployeeRating.Should().Be(5);
+            actual.SocietyRating.Should().Be(2.5);
+            actual.OverallRating.Should().BeApproximately(3.83, .001);
+            actual.EmployeeCustomerRating.Should().Be(4);
+            actual.EmployeeEmployeeRating.Should().Be(5);
+            actual.EmployeeSocietyRating.Should().Be(2.5);
+            actual.EmployeeOverallRating.Should().BeApproximately(3.83, .001);
+            actual.EssentialCustomerRating.Should().BeNull();
+            actual.EssentialEmployeeRating.Should().BeNull();
+            actual.EssentialSocietyRating.Should().BeNull();
+            actual.EssentialOverallRating.Should().BeNull();
+            actual.VulnerableCustomerRating.Should().BeNull();
+            actual.VulnerableEmployeeRating.Should().BeNull();
+            actual.VulnerableSocietyRating.Should().BeNull();
+            actual.VulnerableOverallRating.Should().BeNull();
         }
 
         [Fact]
@@ -748,10 +737,10 @@ namespace Covid19.Tests
 
             // Act
             await PostReview_ForBranch_WhilstAuthenticated_CreatesReview();
-            var company = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={companyGuid}&ratings=true");
 
             // Assert
-            company.ReviewCount.Should().Be(1);
+            actual.ReviewCount.Should().Be(1);
         }
 
         [Fact]
@@ -771,10 +760,10 @@ namespace Covid19.Tests
             await TestClient.PostAsJsonAsync("api/reviews", review);
 
             // Act
-            var companyFull = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
 
             // Assert
-            companyFull.ReviewCount.Should().Be(1);
+            actual.ReviewCount.Should().Be(1);
         }       
 
         [Fact]
@@ -795,25 +784,25 @@ namespace Covid19.Tests
 
             // Act
             await TestClient.PostAsJsonAsync("api/reviews", review);
-            var companyRatings = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
 
             // Assert
-            companyRatings.OverallRating.Should().Be(3.91);
-            companyRatings.CustomerRating.Should().Be(4.22);
-            companyRatings.EmployeeRating.Should().Be(4.57);
-            companyRatings.SocietyRating.Should().Be(2.93);
-            companyRatings.EmployeeOverallRating.Should().Be(3.83);
-            companyRatings.EmployeeCustomerRating.Should().Be(4);
-            companyRatings.EmployeeEmployeeRating.Should().Be(5);
-            companyRatings.EmployeeSocietyRating.Should().Be(2.5);
-            companyRatings.EssentialOverallRating.Should().BeNull();
-            companyRatings.EssentialCustomerRating.Should().BeNull();
-            companyRatings.EssentialEmployeeRating.Should().BeNull();
-            companyRatings.EssentialSocietyRating.Should().BeNull();
-            companyRatings.VulnerableOverallRating.Should().BeNull();
-            companyRatings.VulnerableCustomerRating.Should().BeNull();
-            companyRatings.VulnerableEmployeeRating.Should().BeNull();
-            companyRatings.VulnerableSocietyRating.Should().BeNull();
+            actual.OverallRating.Should().Be(3.91);
+            actual.CustomerRating.Should().Be(4.22);
+            actual.EmployeeRating.Should().Be(4.57);
+            actual.SocietyRating.Should().Be(2.93);
+            actual.EmployeeOverallRating.Should().Be(3.83);
+            actual.EmployeeCustomerRating.Should().Be(4);
+            actual.EmployeeEmployeeRating.Should().Be(5);
+            actual.EmployeeSocietyRating.Should().Be(2.5);
+            actual.EssentialOverallRating.Should().BeNull();
+            actual.EssentialCustomerRating.Should().BeNull();
+            actual.EssentialEmployeeRating.Should().BeNull();
+            actual.EssentialSocietyRating.Should().BeNull();
+            actual.VulnerableOverallRating.Should().BeNull();
+            actual.VulnerableCustomerRating.Should().BeNull();
+            actual.VulnerableEmployeeRating.Should().BeNull();
+            actual.VulnerableSocietyRating.Should().BeNull();
         }
 
         [Fact]
@@ -856,25 +845,25 @@ namespace Covid19.Tests
 
             // Act
             await TestClient.PostAsJsonAsync("api/reviews", newReview);
-            var companyRatings = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
 
             // Assert
-            companyRatings.OverallRating.Should().Be(2.63);
-            companyRatings.CustomerRating.Should().Be(3.1);
-            companyRatings.EmployeeRating.Should().Be(2.75);
-            companyRatings.SocietyRating.Should().Be(2.05);
-            companyRatings.EmployeeOverallRating.Should().Be(3.83);
-            companyRatings.EmployeeCustomerRating.Should().Be(4);
-            companyRatings.EmployeeEmployeeRating.Should().Be(5);
-            companyRatings.EmployeeSocietyRating.Should().Be(2.5);
-            companyRatings.EssentialOverallRating.Should().BeNull();
-            companyRatings.EssentialCustomerRating.Should().BeNull();
-            companyRatings.EssentialEmployeeRating.Should().BeNull();
-            companyRatings.EssentialSocietyRating.Should().BeNull();
-            companyRatings.VulnerableOverallRating.Should().BeNull();
-            companyRatings.VulnerableCustomerRating.Should().BeNull();
-            companyRatings.VulnerableEmployeeRating.Should().BeNull();
-            companyRatings.VulnerableSocietyRating.Should().BeNull();
+            actual.OverallRating.Should().Be(2.63);
+            actual.CustomerRating.Should().Be(3.1);
+            actual.EmployeeRating.Should().Be(2.75);
+            actual.SocietyRating.Should().Be(2.05);
+            actual.EmployeeOverallRating.Should().Be(3.83);
+            actual.EmployeeCustomerRating.Should().Be(4);
+            actual.EmployeeEmployeeRating.Should().Be(5);
+            actual.EmployeeSocietyRating.Should().Be(2.5);
+            actual.EssentialOverallRating.Should().BeNull();
+            actual.EssentialCustomerRating.Should().BeNull();
+            actual.EssentialEmployeeRating.Should().BeNull();
+            actual.EssentialSocietyRating.Should().BeNull();
+            actual.VulnerableOverallRating.Should().BeNull();
+            actual.VulnerableCustomerRating.Should().BeNull();
+            actual.VulnerableEmployeeRating.Should().BeNull();
+            actual.VulnerableSocietyRating.Should().BeNull();
         }
 
         [Fact]
@@ -917,25 +906,25 @@ namespace Covid19.Tests
 
             // Act
             await TestClient.PostAsJsonAsync("api/reviews", newReview);
-            var companyRatings = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
+            var actual = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies/?id={company.Guid}&ratings=true");
 
             // Assert
-            companyRatings.OverallRating.Should().Be(3.31);
-            companyRatings.CustomerRating.Should().Be(3.15);
-            companyRatings.EmployeeRating.Should().Be(5);
-            companyRatings.SocietyRating.Should().Be(2.64);
-            companyRatings.EmployeeOverallRating.Should().Be(3.83);
-            companyRatings.EmployeeCustomerRating.Should().Be(4);
-            companyRatings.EmployeeEmployeeRating.Should().Be(5);
-            companyRatings.EmployeeSocietyRating.Should().Be(2.5);
-            companyRatings.EssentialOverallRating.Should().BeNull();
-            companyRatings.EssentialCustomerRating.Should().BeNull();
-            companyRatings.EssentialEmployeeRating.Should().BeNull();
-            companyRatings.EssentialSocietyRating.Should().BeNull();
-            companyRatings.VulnerableOverallRating.Should().BeNull();
-            companyRatings.VulnerableCustomerRating.Should().BeNull();
-            companyRatings.VulnerableEmployeeRating.Should().BeNull();
-            companyRatings.VulnerableSocietyRating.Should().BeNull();
+            actual.OverallRating.Should().Be(3.31);
+            actual.CustomerRating.Should().Be(3.15);
+            actual.EmployeeRating.Should().Be(5);
+            actual.SocietyRating.Should().Be(2.64);
+            actual.EmployeeOverallRating.Should().Be(3.83);
+            actual.EmployeeCustomerRating.Should().Be(4);
+            actual.EmployeeEmployeeRating.Should().Be(5);
+            actual.EmployeeSocietyRating.Should().Be(2.5);
+            actual.EssentialOverallRating.Should().BeNull();
+            actual.EssentialCustomerRating.Should().BeNull();
+            actual.EssentialEmployeeRating.Should().BeNull();
+            actual.EssentialSocietyRating.Should().BeNull();
+            actual.VulnerableOverallRating.Should().BeNull();
+            actual.VulnerableCustomerRating.Should().BeNull();
+            actual.VulnerableEmployeeRating.Should().BeNull();
+            actual.VulnerableSocietyRating.Should().BeNull();
         }
     }
 }
