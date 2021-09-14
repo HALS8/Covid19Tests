@@ -3,6 +3,7 @@ using CSharpVitamins;
 using FluentAssertions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -116,7 +117,7 @@ namespace Covid19.Tests
         }
 
         [Fact]
-        public async Task GetFeaturedCompanies()
+        public async Task GetFeaturedCompanies_ReturnsCorrectCompanies()
         {
             // Act
             var companies = await TestClient.GetFromJsonAsync<FeaturedCompaniesDTO>("api/companies/featured");
@@ -128,6 +129,156 @@ namespace Covid19.Tests
             companies.SmallCompany.Name.Should().Be("Test Company 4");
             companies.SocietalRoleModel.Name.Should().Be("Test Company 2");
             companies.VulnerableFavourite.Name.Should().Be("Test Company 2");
+        }
+
+        [Fact]
+        public async Task GetFeaturedCompanies_CustomersChoice_IncludesRequiredFields()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<FeaturedCompaniesDTO>("api/companies/featured");
+            var actual = companies.CustomersChoice;
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            // Assert
+            actual.Should().NotBeNull();
+            actual.Name.Should().Be(expected.Name);
+            actual.Structure.Should().Be(expected.Structure);
+            actual.PrimarySector.Should().Be(expected.PrimarySector);
+            actual.SecondarySector.Should().Be(expected.SecondarySector);
+            actual.StreetNumber.Should().Be(expected.StreetNumber);
+            actual.StreetName.Should().Be(expected.StreetName);
+            actual.City.Should().Be(expected.City);
+            actual.Region.Should().Be(expected.Region);
+            actual.Country.Should().Be(expected.Country);
+            actual.OverallRating.Should().Be(expected.OverallRating);
+            actual.CustomerRating.Should().Be(expected.CustomerRating);
+            actual.EmployeeRating.Should().Be(expected.EmployeeRating);
+            actual.SocietyRating.Should().Be(expected.SocietyRating);
+        }
+
+        [Fact]
+        public async Task GetFeaturedCompanies_EmployeeFavourite_IncludesRequiredFields()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<FeaturedCompaniesDTO>("api/companies/featured");
+            var actual = companies.EmployeeFavourite;
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            // Assert
+            actual.Should().NotBeNull();
+            actual.Name.Should().Be(expected.Name);
+            actual.Structure.Should().Be(expected.Structure);
+            actual.PrimarySector.Should().Be(expected.PrimarySector);
+            actual.SecondarySector.Should().Be(expected.SecondarySector);
+            actual.StreetNumber.Should().Be(expected.StreetNumber);
+            actual.StreetName.Should().Be(expected.StreetName);
+            actual.City.Should().Be(expected.City);
+            actual.Region.Should().Be(expected.Region);
+            actual.Country.Should().Be(expected.Country);
+            actual.EmployeeOverallRating.Should().Be(expected.EmployeeOverallRating);
+            actual.EmployeeCustomerRating.Should().Be(expected.EmployeeCustomerRating);
+            actual.EmployeeEmployeeRating.Should().Be(expected.EmployeeEmployeeRating);
+            actual.EmployeeSocietyRating.Should().Be(expected.EmployeeSocietyRating);
+        }
+
+        [Fact]
+        public async Task GetFeaturedCompanies_EssentialFavourite_IncludesRequiredFields()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<FeaturedCompaniesDTO>("api/companies/featured");
+            var actual = companies.EssentialFavourite;
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            // Assert
+            actual.Should().NotBeNull();
+            actual.Name.Should().Be(expected.Name);
+            actual.Structure.Should().Be(expected.Structure);
+            actual.PrimarySector.Should().Be(expected.PrimarySector);
+            actual.SecondarySector.Should().Be(expected.SecondarySector);
+            actual.StreetNumber.Should().Be(expected.StreetNumber);
+            actual.StreetName.Should().Be(expected.StreetName);
+            actual.City.Should().Be(expected.City);
+            actual.Region.Should().Be(expected.Region);
+            actual.Country.Should().Be(expected.Country);
+            actual.EssentialOverallRating.Should().Be(expected.EssentialOverallRating);
+            actual.EssentialCustomerRating.Should().Be(expected.EssentialCustomerRating);
+            actual.EssentialEmployeeRating.Should().Be(expected.EssentialEmployeeRating);
+            actual.EssentialSocietyRating.Should().Be(expected.EssentialSocietyRating);
+        }
+
+        [Fact]
+        public async Task GetFeaturedCompanies_SmallCompany_IncludesRequiredFields()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<FeaturedCompaniesDTO>("api/companies/featured");
+            var actual = companies.SmallCompany;
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            // Assert
+            actual.Should().NotBeNull();
+            actual.Name.Should().Be(expected.Name);
+            actual.Structure.Should().Be(expected.Structure);
+            actual.PrimarySector.Should().Be(expected.PrimarySector);
+            actual.SecondarySector.Should().Be(expected.SecondarySector);
+            actual.StreetNumber.Should().Be(expected.StreetNumber);
+            actual.StreetName.Should().Be(expected.StreetName);
+            actual.City.Should().Be(expected.City);
+            actual.Region.Should().Be(expected.Region);
+            actual.Country.Should().Be(expected.Country);
+            actual.OverallRating.Should().Be(expected.OverallRating);
+            actual.CustomerRating.Should().Be(expected.CustomerRating);
+            actual.EmployeeRating.Should().Be(expected.EmployeeRating);
+            actual.SocietyRating.Should().Be(expected.SocietyRating);
+        }
+
+        [Fact]
+        public async Task GetFeaturedCompanies_SocietalRoleModel_IncludesRequiredFields()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<FeaturedCompaniesDTO>("api/companies/featured");
+            var actual = companies.SocietalRoleModel;
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            // Assert
+            actual.Should().NotBeNull();
+            actual.Name.Should().Be(expected.Name);
+            actual.Structure.Should().Be(expected.Structure);
+            actual.PrimarySector.Should().Be(expected.PrimarySector);
+            actual.SecondarySector.Should().Be(expected.SecondarySector);
+            actual.StreetNumber.Should().Be(expected.StreetNumber);
+            actual.StreetName.Should().Be(expected.StreetName);
+            actual.City.Should().Be(expected.City);
+            actual.Region.Should().Be(expected.Region);
+            actual.Country.Should().Be(expected.Country);
+            actual.OverallRating.Should().Be(expected.OverallRating);
+            actual.CustomerRating.Should().Be(expected.CustomerRating);
+            actual.EmployeeRating.Should().Be(expected.EmployeeRating);
+            actual.SocietyRating.Should().Be(expected.SocietyRating);
+        }
+
+        [Fact]
+        public async Task GetFeaturedCompanies_VulnerableFavourite_IncludesRequiredFields()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<FeaturedCompaniesDTO>("api/companies/featured");
+            var actual = companies.VulnerableFavourite;
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            // Assert
+            actual.Should().NotBeNull();
+            actual.Name.Should().Be(expected.Name);
+            actual.Structure.Should().Be(expected.Structure);
+            actual.PrimarySector.Should().Be(expected.PrimarySector);
+            actual.SecondarySector.Should().Be(expected.SecondarySector);
+            actual.StreetNumber.Should().Be(expected.StreetNumber);
+            actual.StreetName.Should().Be(expected.StreetName);
+            actual.City.Should().Be(expected.City);
+            actual.Region.Should().Be(expected.Region);
+            actual.Country.Should().Be(expected.Country);
+            actual.VulnerableOverallRating.Should().Be(expected.VulnerableOverallRating);
+            actual.VulnerableCustomerRating.Should().Be(expected.VulnerableCustomerRating);
+            actual.VulnerableEmployeeRating.Should().Be(expected.VulnerableEmployeeRating);
+            actual.VulnerableSocietyRating.Should().Be(expected.VulnerableSocietyRating);
         }
 
         [Fact]
@@ -148,6 +299,171 @@ namespace Covid19.Tests
             companies[7].Name.Should().Be("Test Company 8");
             companies[8].Name.Should().Be("Test Company 9");
             companies[9].Name.Should().Be("Test Company 10");
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_ReturnsExpectedCompanyDetails_ForMultinational()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies.Where(c => c.Structure == "Multinational").FirstOrDefault();
+            actual.Should().NotBeNull();
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.Name = expected.Name;
+            actual.City = expected.City;
+            actual.Region = expected.Region;
+            actual.Country = expected.Country;
+            actual.Structure = expected.Structure;
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_ReturnsExpectedCompanyDetails_ForNational()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies.Where(c => c.Structure == "National").FirstOrDefault();
+            actual.Should().NotBeNull();
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.Name = expected.Name;
+            actual.City = expected.City;
+            actual.Region = expected.Region;
+            actual.Country = expected.Country;
+            actual.Structure = expected.Structure;
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_ReturnsExpectedCompanyDetails_ForRegional()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies.Where(c => c.Structure == "Regional").FirstOrDefault();
+            actual.Should().NotBeNull();
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.Name = expected.Name;
+            actual.City = expected.City;
+            actual.Region = expected.Region;
+            actual.Country = expected.Country;
+            actual.Structure = expected.Structure;
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_ReturnsExpectedCompanyDetails_ForLocal()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies.Where(c => c.Structure == "Local").FirstOrDefault();
+            actual.Should().NotBeNull();
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.Name = expected.Name;
+            actual.City = expected.City;
+            actual.Region = expected.Region;
+            actual.Country = expected.Country;
+            actual.Structure = expected.Structure;
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_RankedByAll_ReturnsAllRatings()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies[0];
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.ReviewCountAll.Should().BeGreaterThan(0);
+            actual.ReviewCountAll = expected.ReviewCount;
+            actual.OverallRating.HasValue.Should().BeTrue();
+            actual.CustomerRating.HasValue.Should().BeTrue();
+            actual.EmployeeRating.HasValue.Should().BeTrue();
+            actual.SocietyRating.HasValue.Should().BeTrue();
+            actual.OverallRating.GetValueOrDefault().Should().Be(expected.OverallRating);
+            actual.CustomerRating.GetValueOrDefault().Should().Be(expected.CustomerRating);
+            actual.EmployeeRating.GetValueOrDefault().Should().Be(expected.EmployeeRating);
+            actual.SocietyRating.GetValueOrDefault().Should().Be(expected.SocietyRating);
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_RankedByEmployees_ReturnsEmployeeRatings()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings?RatingFilter=Employee");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies[1];
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.ReviewCountEmployee.Should().BeGreaterThan(0);
+            actual.EmployeeOverallRating.HasValue.Should().BeTrue();
+            actual.EmployeeCustomerRating.HasValue.Should().BeTrue();
+            actual.EmployeeEmployeeRating.HasValue.Should().BeTrue();
+            actual.EmployeeSocietyRating.HasValue.Should().BeTrue();
+            actual.EmployeeOverallRating.GetValueOrDefault().Should().Be(expected.EmployeeOverallRating);
+            actual.EmployeeCustomerRating.GetValueOrDefault().Should().Be(expected.EmployeeCustomerRating);
+            actual.EmployeeEmployeeRating.GetValueOrDefault().Should().Be(expected.EmployeeEmployeeRating);
+            actual.EmployeeSocietyRating.GetValueOrDefault().Should().Be(expected.EmployeeSocietyRating);
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_RankedByEssential_ReturnsEssentialRatings()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings?RatingFilter=Essential");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies[0];
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.ReviewCountEssential.Should().BeGreaterThan(0);
+            actual.EssentialOverallRating.HasValue.Should().BeTrue();
+            actual.EssentialCustomerRating.HasValue.Should().BeTrue();
+            actual.EssentialEmployeeRating.HasValue.Should().BeTrue();
+            actual.EssentialSocietyRating.HasValue.Should().BeTrue();
+            actual.EssentialOverallRating.GetValueOrDefault().Should().Be(expected.EssentialOverallRating);
+            actual.EssentialCustomerRating.GetValueOrDefault().Should().Be(expected.EssentialCustomerRating);
+            actual.EssentialEmployeeRating.GetValueOrDefault().Should().Be(expected.EssentialEmployeeRating);
+            actual.EssentialSocietyRating.GetValueOrDefault().Should().Be(expected.EssentialSocietyRating);
+        }
+
+        [Fact]
+        public async Task GetCompanyRankings_RankedByVulnerable_ReturnsVulnerableRatings()
+        {
+            // Act
+            var companies = await TestClient.GetFromJsonAsync<List<CompanyRankingDTO>>("api/companies/rankings?RatingFilter=Vulnerable");
+            companies.Count.Should().BeGreaterThan(0);
+
+            var actual = companies[0];
+            var expected = await TestClient.GetFromJsonAsync<CompanyIncRatingsDTO>($"api/companies?id={actual.Guid}&ratings=true");
+
+            //Assert
+            actual.ReviewCountVulnerable.Should().BeGreaterThan(0);
+            actual.VulnerableOverallRating.HasValue.Should().BeTrue();
+            actual.VulnerableCustomerRating.HasValue.Should().BeTrue();
+            actual.VulnerableEmployeeRating.HasValue.Should().BeTrue();
+            actual.VulnerableSocietyRating.HasValue.Should().BeTrue();
+            actual.VulnerableOverallRating.GetValueOrDefault().Should().Be(expected.VulnerableOverallRating);
+            actual.VulnerableCustomerRating.GetValueOrDefault().Should().Be(expected.VulnerableCustomerRating);
+            actual.VulnerableEmployeeRating.GetValueOrDefault().Should().Be(expected.VulnerableEmployeeRating);
+            actual.VulnerableSocietyRating.GetValueOrDefault().Should().Be(expected.VulnerableSocietyRating);
         }
 
         [Fact]
@@ -1307,6 +1623,35 @@ namespace Covid19.Tests
             response.Guid.Should().Be(branchGuid);
             response.Name.Should().Be("Test Company 0 Local");
             response.Company.Guid.Should().Be(companyGuid);
+        }
+
+        [Fact]
+        public async Task GetBranch_ReturnsBranch_WithCompleteFields()
+        {
+            // Arrange
+            var companyResponse = await TestClient.GetFromJsonAsync<List<CompanyLightDTO>>("api/companies/search?SearchString='Test Company 0'").ConfigureAwait(false);
+            var company = companyResponse.FirstOrDefault();
+            var branchGuid = (await TestClient.GetFromJsonAsync<List<BranchFullDTO>>($"api/companies/{company.Guid}/branches"))[0].Guid;
+            var expected = new BranchNoRatingsDTO()
+            {
+                Company = company,
+                Name = "Test Company 0 Local",
+                StreetNumber = "21",
+                StreetName = "Poyntins Road",
+                City = "Enfield",
+                Region = "London",
+                Country = "GB",
+                PostCode = "EN1 50D",
+                Latitude = "9834534.45",
+                Longitude = "433634645.434"
+            };
+
+            // Act
+            var actual = await TestClient.GetFromJsonAsync<BranchNoRatingsDTO>($"api/companies/branches/{branchGuid}");
+            expected.Guid = actual.Guid;
+
+            // Assert
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
